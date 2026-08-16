@@ -12,7 +12,6 @@ export default function App() {
   const [pairingOpen, setPairingOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
-  // Auto-pair when opened from a QR / share link like ?room=ABC123
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sharedRoom = params.get("room");

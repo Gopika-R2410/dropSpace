@@ -1,17 +1,22 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 import "dotenv/config";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
-// Two clients are needed: one for normal commands, one dedicated to pub/sub
-// subscriptions, since ioredis puts a client into subscriber mode exclusively.
-export const redis = new Redis(REDIS_URL, {
-  maxRetriesPerRequest: 3,
-});
+// Redis configuration optimized for cloud hosts like Render
+const redisOptions = {
+  // Fixes potential Pub/Sub & command queuing issues on hosted instances
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  // Reconnect automatically if connection drops during heavy uploads
+  retryStrategy(times) {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+};
 
-export const redisSub = new Redis(REDIS_URL, {
-  maxRetriesPerRequest: 3,
-});
+export const redis = new Redis(REDIS_URL, redisOptions);
+export const redisSub = new Redis(REDIS_URL, redisOptions);
 
 redis.on("connect", () => console.log("[redis] client connected"));
 redis.on("error", (err) => console.error("[redis] client error:", err.message));
